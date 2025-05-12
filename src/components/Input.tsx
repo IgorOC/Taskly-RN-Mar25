@@ -50,7 +50,7 @@ const Input: React.FC<InputProps> = ({
         placeholder={placeholder}
         secureTextEntry={isPassword}
         keyboardType={keyboardType}
-        placeholderTextColor={theme.colors.mainText}
+        placeholderTextColor={!enable ? theme.colors.mainText : theme.colors.secondaryText}
         autoCapitalize={autoCapitalize}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
