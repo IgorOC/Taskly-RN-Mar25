@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import React, { useRef,useState,useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Button from '../../components/Button';
 import axios from 'axios';
+import { useTheme } from '../../theme/ThemeContext';
+import { Theme } from '../../theme/Theme';
+import { useRoute } from '@react-navigation/native';
 
 const updateAvatar = async (data: { picture: string }, token: string) => {
     const response = await axios.put(
@@ -19,6 +22,9 @@ const updateAvatar = async (data: { picture: string }, token: string) => {
     return response.data;
 };
 import { useAuth } from '../../context/AuthContext'; // Para obter o token do usuário
+import BackMenu from '../../components/BackButtom';
+import { calculateProgressBarWidth } from '../../utils/AnimationUtils';
+import { updateProfileName } from '../../services/api';
 
 const avatars = [
   { id: 1, source: require('../../assets/avatarr1.png') },
@@ -29,31 +35,73 @@ const avatars = [
 ];
 
 const AvatarUpdate: React.FC = () => {
-  const navigation = useNavigation();
   const { idToken } = useAuth(); // Obtém o token do usuário autenticado
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [selectedAvatarId, setSelectedAvatarId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progressoAtual, setProgressoAtual] = useState(0);
+  const progressoTotal = 100;
+  const [carregando, setCarregando] = useState(true);
+  const animatedProgress = useRef(new Animated.Value(0)).current;
+  const { widthInterpolation, progressPercentage } = calculateProgressBarWidth(
+      animatedProgress,
+      progressoAtual,
+      progressoTotal,
+    );
+
+    //Recebendo parametros
+    const route = useRoute();
+    const { fullName } = route.params as { fullName: string };
+    console.log("teste route "+fullName);
+
+    //enviando parametros
+    const navigation = useNavigation();
+
+useEffect(() => {
+    // Simulação de um processo de carregamento
+    let contador = 50;
+      setProgressoAtual(contador);
+
+      if (contador >= progressoTotal) {
+        setCarregando(false);
+      }
+
+
+  }, []);
+
+  const incrementProgress = () => {
+    setProgressoAtual((prev) => Math.min(prev + 50, progressoTotal));
+  };
+
 
   const handleSelectAvatar = (id: number) => {
     setSelectedAvatarId(id);
+    incrementProgress();
   };
 
   const handleConfirmSelection = async () => {
     if (selectedAvatarId === null) {
+
       Alert.alert('Aviso', 'Por favor, selecione um avatar para continuar.');
       return;
     }
-
     try {
       setLoading(true);
+  
+      // Atualiza o avatar
       const avatarId = `avatar_${selectedAvatarId}`;
       await updateAvatar({ picture: avatarId }, idToken); // Chama a API para atualizar o avatar
-
-      Alert.alert('Sucesso', 'Avatar atualizado com sucesso!');
-      navigation.goBack(); // Retorna para a tela anterior
+  
+      // Atualiza o nome do perfil
+      await updateProfileName(fullName); // Chama a API para atualizar o nome do perfil
+  
+      // Chamada do modal da tela menu
+      navigation.navigate('Home', { avatarUpdated: true });
+      Alert.alert('Sucesso', 'Avatar e nome atualizados com sucesso!');
     } catch (error: any) {
       console.error(error);
-      Alert.alert('Erro', error.message || 'Falha ao atualizar o avatar');
+      Alert.alert('Erro', error.message || 'Falha ao atualizar o avatar e o nome');
     } finally {
       setLoading(false);
     }
@@ -62,6 +110,22 @@ const AvatarUpdate: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <View>
+          <BackMenu text="EDIÇÂO DE PERFIL" />
+      </View>
+      <View style={styles.progressBarContainer}>
+          <View style={styles.progressBarBackground}>
+            <Animated.View
+              style={[
+                styles.progressBarFill,
+                { width: widthInterpolation },
+              ]}
+                        />
+          </View>
+        </View>
+
+
+
       <View style={styles.container}>
         <Text style={styles.title}>ATUALIZE SEU AVATAR</Text>
         <Text style={styles.subtitle}>(Escolha somente um)</Text>
@@ -89,7 +153,13 @@ const AvatarUpdate: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
+
+
+
+
+
         <Button
+
           title="CONFIRMAR SELEÇÃO"
           onPress={handleConfirmSelection}
           loading={loading}
@@ -100,24 +170,30 @@ const AvatarUpdate: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+const getStyles = (theme: Theme) =>StyleSheet.create({
+  safeArea: {
+     flex: 1,
+     backgroundColor:theme.colors.background,
+     paddingTop: 40,
+     paddingBottom:20,
+
+    },
   container: {
     flex: 1,
-    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    padding:20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: theme.colors.mainText,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.secondaryText,
     marginBottom: 32,
     textAlign: 'center',
   },
@@ -139,6 +215,29 @@ const styles = StyleSheet.create({
   selectedAvatarButton: { borderColor: '#6200EE' },
   avatarImage: { width: '100%', height: '100%' },
   opaqueAvatar: { opacity: 0.4 },
+  btn:{
+    color:theme.colors.mainText,
+  },
+  progressBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingLeft: 40,
+    paddingRight: 40,
+    paddingTop:40,
+  },
+  progressBarBackground: {
+    backgroundColor: theme.colors.primaryLight,
+    height: 8,
+    flex: 1,
+    marginRight: 10,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    backgroundColor: theme.colors.primary,
+    height: '100%',
+    paddingTop:40,
+  },
 });
 
 export default AvatarUpdate;
