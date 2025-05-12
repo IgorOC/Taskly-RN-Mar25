@@ -1,7 +1,6 @@
 import React, {useRef, useMemo, useState,useEffect} from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   Animated,
   KeyboardAvoidingView,
@@ -14,14 +13,15 @@ import { Platform } from 'react-native';
 import BackMenu from '../../components/BackButtom';
 import Input from '../../components/Input';
 import useForm from '../../hooks/useForm';
-import { formatPhoneNumber, validateEmail, validateFullName, validatePassword, validatePasswordConfirmation, validatePhone } from '../../utils/validation';
+import { formatPhoneNumber, validateFullName , validatePhone } from '../../utils/validation';
 import Button from '../../components/Button';
 import { getRememberedEmail } from '../../storage/userStorage';
 import { useNavigation } from '@react-navigation/native';
+import UpdateModal from '../../components/UpdateModal';
 
 
 const UserEdit: React.FC = () => {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [carregando, setCarregando] = useState(true);
@@ -33,7 +33,8 @@ const UserEdit: React.FC = () => {
     progressoAtual,
     progressoTotal,
   );
-
+  const [phoneProgressIncremented, setPhoneProgressIncremented] = useState(false);
+  const [nameProgressIncremented, setNameProgressIncremented] = useState(false);
   useEffect(() => {
     // Simulação de um processo de carregamento
     let contador = 0;
@@ -46,29 +47,17 @@ const UserEdit: React.FC = () => {
 
   }, []);
 
- const passwordRef = useRef<string>('');
   const initialValues = useMemo(
       () => ({
         fullName: '',
-        email: '',
         phone: '',
-        password: '',
-        passwordConfirmation: '',
       }),
       [],
     );
     const validations = useMemo(
         () => ({
           fullName: validateFullName,
-          email: validateEmail,
           phone: validatePhone,
-          password: (value: string) => {
-            passwordRef.current = value;
-            return validatePassword(value);
-          },
-          passwordConfirmation: (confirmation: string) => {
-            return validatePasswordConfirmation(passwordRef.current, confirmation);
-          },
         }),
         [],
       );
@@ -77,12 +66,22 @@ const UserEdit: React.FC = () => {
     useForm(initialValues, validations);
 
     const handleContinue = async () => {
-      navigation.navigate('AvatarUpdate' as never);
+      navigation.navigate('AvatarUpdate' , {
+        fullName: formState.fullName.value,
+      });
     };
 
-  const handlePhoneChange = (value: string) => {
+    const handlePhoneChange = (value: string) => {
       const formattedPhone = formatPhoneNumber(value);
       handleChange('phone')(formattedPhone);
+      const numericPhone = formattedPhone.replace(/\D/g, ''); // Remove caracteres não numéricos
+      if (numericPhone.length === 11 && !phoneProgressIncremented) {
+        handleBlur('phone')(); // Chama o blur para validação
+        if (!formState.phone.error) {
+          incrementProgress(); // Incrementa o progresso
+          setPhoneProgressIncremented(true); // Marca como incrementado
+        }
+      }
     };
     const incrementProgress = () => {
       setProgressoAtual((prev) => Math.min(prev + 25, progressoTotal));
@@ -95,9 +94,8 @@ const UserEdit: React.FC = () => {
         style={styles.container}>
        <View>
           <View>
-            <BackMenu text="Termos e Regulamentos" />
+            <BackMenu text="EDIÇÂO DE PERFIL" />
           </View>
-          {carregando ? (
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBarBackground}>
                 <Animated.View
@@ -107,55 +105,57 @@ const UserEdit: React.FC = () => {
                   ]}
                   />
               </View>
-              <Text>
-                {`${Math.round(progressPercentage * 100)}%`}
-              </Text>
+
             </View>
-          ) : (
-            <Text>Carregamento Concluído!</Text>
-          )}
       </View>
 
 
 
       <View style={styles.form}>
       <Input
-              label="Nome Completo"
-              placeholder="João Silva"
-              value={formState.fullName.value}
-              onChangeText={handleChange('fullName')}
-              onBlur={() => {
-                handleBlur('fullName')();
-                if (!formState.fullName.error && formState.fullName.value) {
-                  incrementProgress(); // Incrementa o progresso se o nome for válido
-                }
-              }}
-              error={formState.fullName.error}
-              autoCapitalize="words"
-            />
+        label="Nome Completo"
+        placeholder="Nome Completo"
+        value={formState.fullName.value}
+        onChangeText={(value) => {
+          handleChange('fullName')(value);
+
+          // Verifica se o nome contém pelo menos duas palavras
+          const nameParts = value.trim().split(' ');
+          if (
+            nameParts.length >= 2 &&
+            nameParts.every((part) => part.length > 0) &&
+            !nameProgressIncremented
+          ) {
+            incrementProgress(); // Incrementa o progresso
+            setNameProgressIncremented(true); // Marca como incrementado
+          }
+        }}
+        error={formState.fullName.error}
+        autoCapitalize="words"
+      />
             <Input
               enable={false}
               label="E-mail"
               placeholder={getRememberedEmail() ?? undefined}
+              value=""
+              onChangeText={() => {}}
               autoCapitalize="none"
             />
              <Input
               label="Número"
-              placeholder="(00) 9 0000-0000"
+              placeholder="(DD) 9 NNNN-NNNN"
               value={formState.phone.value}
               onChangeText={handlePhoneChange}
-              onBlur={()=>{
-                handleBlur('phone')();
-                if (!formState.phone.error && formState.phone.value) {
-                  incrementProgress(); // Incrementa o progresso se o nome for válido
-                }
-              }}
               error={formState.phone.error}
               keyboardType="phone-pad"
             />
             <Button title="CONTINUAR" onPress={handleContinue} disabled={(progressPercentage * 100 === 50) ? false : true}/>
       </View>
     </KeyboardAvoidingView>
+
+
+
+   
   </SafeAreaView>
   );
 };
