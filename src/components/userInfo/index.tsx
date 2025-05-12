@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, Image, StyleSheet } from 'react-native';
 import { Theme } from '../../theme/Theme';
 import { useTheme } from '../../theme/ThemeContext';
-import { getRememberedEmail } from '../../storage/userStorage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getProfile } from '../../services/api';
 
 interface UserInfo {
   name: string;
@@ -17,18 +17,37 @@ interface UserInfoCardProps {
 }
 
 export const UserInfoCard: React.FC<UserInfoCardProps> = ({ userData }) => {
+  const [profile, setProfile] = useState<any | null>(null); 
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getProfile();
+        setProfile(data);
+      } catch (err) {
+        console.error('Erro ao buscar perfil:', err);
+        setError('Não foi possível carregar o perfil.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-
+    fetchProfile();
+  }, []);
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   if (!userData) {
     return null;
   }
+  if (error) {
+    return <Text>{error}</Text>;
+  }
 
-
-
+  console.log(loading);
+  console.log(profile?.phone);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -36,9 +55,9 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ userData }) => {
         <Image source={{ uri: userData.picture }} style={styles.profileImage} />
       )}
        <Image source={require(`../../assets/menu/profileImage.png`)} style={styles.profileImage} />
-      <Text style={styles.name}>Rafaela Santos</Text>
-      <Text style={styles.email}>{getRememberedEmail()}</Text>
-      <Text style={styles.phone}>(23) 93232 - 3232</Text>
+      <Text style={styles.name}>{profile?.name}</Text>
+      <Text style={styles.email}>{profile?.email}</Text>
+      <Text style={styles.phone}>{profile?.phone}</Text>
     </SafeAreaView>
   );
 };
