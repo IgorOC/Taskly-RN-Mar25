@@ -9,6 +9,8 @@ export type AuthStackParamList = {
     };
     password: string;
   };
+
+  
 };
 
 export type MainStackParamList = {
@@ -20,7 +22,8 @@ export type MainStackParamList = {
   Terms:undefined;
   Preferencies:undefined;
   DarkMode:undefined;
-  AvatarUpdate:undefined;
-  UserEdit:undefined;
+  AvatarUpdate:{avatarUpdated:boolean};
+  UserEdit:{ fullName: string};
   // Adicione outras telas principais aqui
 };
+
