@@ -137,26 +137,27 @@ const AvatarUpdate: React.FC = () => {
               ]}
               onPress={() => handleSelectAvatar(avatar.id)}
               activeOpacity={0.7}>
-              <Image
-                source={avatar.source}
-                style={[
-                  styles.avatarImage,
-                  selectedAvatarId !== null &&
+                <Image
+                  source={avatar.source}
+                  style={[
+                    styles.avatarImage,
+                    selectedAvatarId !== null &&
                     selectedAvatarId !== avatar.id &&
                     styles.opaqueAvatar,
-                ]}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          ))}
+                  ]}
+                  resizeMode="cover"
+                  />
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Button
+            title={loading ? '' : 'CONFIRMAR ATUALIZAÇÃO'}
+            onPress={handleConfirmSelection}
+            loading={loading}
+            disabled={loading}
+            />
         </View>
-        <Button
-          title={loading ? '' : 'CONFIRMAR ATUALIZAÇÃO'}
-          onPress={handleConfirmSelection}
-          loading={loading}
-          disabled={loading}
-        />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -230,8 +231,8 @@ const getStyles = (theme: Theme) =>
     opaqueAvatar: {
       opacity: 0.4,
     },
-    top: {
-      paddingTop: 20,
+    top:{
+     paddingTop:20,
     },
   });
 
