@@ -1,4 +1,3 @@
-// filepath: src/screens/tasks/TaskDetailStyles.tsx
 import {useMemo} from 'react';
 import {StyleSheet} from 'react-native';
 import {useTheme} from '../../theme/ThemeContext';

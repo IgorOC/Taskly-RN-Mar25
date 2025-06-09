@@ -30,7 +30,6 @@ import {generateUniqueId} from '../../utils/idGenerator';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faFilter} from '@fortawesome/free-solid-svg-icons/faFilter';
 
-// Helper para mapear prioridade local para valor da API
 const mapPriorityToApiValue = (priority: Priority): 1 | 2 | 3 => {
   switch (priority) {
     case 'ALTA':
@@ -45,7 +44,6 @@ const mapPriorityToApiValue = (priority: Priority): 1 | 2 | 3 => {
   }
 };
 
-// Helper para mapear prioridade da API (numérica) para local (string)
 const mapApiPriorityToLocal = (apiPriority: number | string | undefined): Priority => {
   const priorityNum = typeof apiPriority === 'string' ? parseInt(apiPriority, 10) : apiPriority;
   switch (priorityNum) {
@@ -56,7 +54,6 @@ const mapApiPriorityToLocal = (apiPriority: number | string | undefined): Priori
     case 3:
       return 'BAIXA';
     default:
-      // Se a API retornar algo inesperado ou undefined, usar um padrão local
       console.warn(
         `Prioridade da API desconhecida ou ausente: ${apiPriority}, usando padrão MÉDIA`,
       );
@@ -64,7 +61,6 @@ const mapApiPriorityToLocal = (apiPriority: number | string | undefined): Priori
   }
 };
 
-// Helper para formatar data ISO para dd/mm/yyyy
 const formatDateToDdMmYyyy = (isoDateString: string): string => {
   if (!isoDateString) {
     return '';
@@ -81,13 +77,9 @@ const formatDateToDdMmYyyy = (isoDateString: string): string => {
   }
 };
 
-// Helper para converter "dd/mm/yyyy" para string ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
 const parseDdMmYyyyToISO = (dateString: string | undefined): string => {
   if (!dateString || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-    // Se a string estiver vazia, undefined, inválida ou não no formato esperado,
-    // retorna uma string vazia. O componente de data/lógica local deve lidar com isso.
     if (dateString) {
-      // Loga apenas se não for undefined/null/vazio para evitar spam
       console.warn(
         `Data da API inválida ou vazia para conversão para ISO: '${dateString}'. Retornando string vazia.`,
       );
@@ -97,9 +89,8 @@ const parseDdMmYyyyToISO = (dateString: string | undefined): string => {
   try {
     const parts = dateString.split('/');
     const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado em JavaScript Date
+    const month = parseInt(parts[1], 10) - 1;
     const year = parseInt(parts[2], 10);
-    // Cria a data em UTC para evitar problemas de fuso horário ao converter para ISO string
     const date = new Date(Date.UTC(year, month, day));
     if (
       date.getUTCFullYear() === year &&
@@ -190,25 +181,51 @@ const HomeScreen: React.FC = () => {
     (filters: FilterOptions, taskList = tasks): void => {
       let filteredTasks = [...taskList];
 
-      // Apply tag filters
+      // Filtro por tags
       if (filters.tags && filters.tags.length > 0) {
-        filteredTasks = filteredTasks.filter(task =>
-          task.tags.some(tag => filters.tags.includes(tag)),
+        filteredTasks = filteredTasks.filter(
+          task => task.tags && task.tags.some(tag => filters.tags.includes(tag)),
         );
       }
 
-      // Apply priority sorting
-      filteredTasks.sort((a, b) => {
-        const priorityValues: {[key: string]: number} = {ALTA: 3, MÉDIA: 2, BAIXA: 1};
-        const priorityA = priorityValues[a.priority] || 2;
-        const priorityB = priorityValues[b.priority] || 2;
+      // Filtro por data
+      if (filters.dateFrom || filters.dateTo) {
+        filteredTasks = filteredTasks.filter(task => {
+          if (!task.dueDate) return false; // Se a tarefa não tem data, não inclui no filtro
 
-        if (filters.orderBy === 'high-to-low') {
-          return priorityB - priorityA;
-        } else {
-          return priorityA - priorityB;
-        }
-      });
+          const taskDate = new Date(task.dueDate);
+
+          // Verificar data de início
+          if (filters.dateFrom) {
+            const fromDate = new Date(filters.dateFrom);
+            if (taskDate < fromDate) return false;
+          }
+
+          // Verificar data de fim
+          if (filters.dateTo) {
+            const toDate = new Date(filters.dateTo);
+            if (taskDate > toDate) return false;
+          }
+
+          return true;
+        });
+      }
+
+      // Filtro por prioridade (ordenação)
+      if (filters.orderBy) {
+        filteredTasks.sort((a, b) => {
+          const priorityValues: {[key: string]: number} = {ALTA: 3, MÉDIA: 2, BAIXA: 1};
+          const priorityA = priorityValues[a.priority] || 2;
+          const priorityB = priorityValues[b.priority] || 2;
+
+          if (filters.orderBy === 'high-to-low') {
+            return priorityB - priorityA;
+          } else if (filters.orderBy === 'low-to-high') {
+            return priorityA - priorityB;
+          }
+          return 0;
+        });
+      }
 
       setDisplayedTasks(filteredTasks);
       setActiveFilters(filters);
@@ -340,12 +357,10 @@ const HomeScreen: React.FC = () => {
           id: apiTask.id,
           title: apiTask.title,
           description: apiTask.description || '',
-          isCompleted: apiTask.done, // 'done' da API para 'isCompleted' local
+          isCompleted: apiTask.done,
           createdAt: apiTask.createdAt || new Date().toISOString(),
           updatedAt: apiTask.updatedAt || new Date().toISOString(),
-          // Mapear deadline da API ("dd/mm/yyyy") para dueDate local (ISO string)
           dueDate: parseDdMmYyyyToISO(apiTask.deadline),
-          // Mapear priority da API (1,2,3) para priority local ('ALTA', 'MÉDIA', 'BAIXA')
           priority: mapApiPriorityToLocal(apiTask.priority),
           tags: apiTask.tags || [],
           subtasks: (apiTask.subtasks || []).map((st: any) => ({
@@ -361,12 +376,10 @@ const HomeScreen: React.FC = () => {
           for (const apiTask of formattedApiTasks) {
             const localTask = getAllLocalTasks(userId).find(t => t.id === apiTask.id);
 
-            // Se a task local tem alterações pendentes, NÃO sobrescreva!
             if (localTask && localTask.needsSync) {
               continue;
             }
 
-            // Merge de subtarefas: preserva IDs locais se o texto for igual
             const mergedSubtasks = (apiTask.subtasks || []).map(apiSub => {
               const localSub = localTask?.subtasks?.find(ls => ls.text === apiSub.text);
               return {
@@ -410,7 +423,7 @@ const HomeScreen: React.FC = () => {
         console.log('HomeScreen: Sync process finished.');
       }
     },
-    [userId, idToken, isSyncing, initialLoadDone, activeFilters, applyFilters],
+    [userId, idToken, isSyncing, initialLoadDone],
   );
 
   useEffect(() => {
@@ -429,6 +442,24 @@ const HomeScreen: React.FC = () => {
       console.log('HomeScreen: No token, clearing tasks and resetting initial load state.');
     }
   }, [userId, idToken, initialLoadDone, syncLocalTasksWithApi]);
+
+  useEffect(() => {
+    const allTags = new Set<string>();
+    tasks.forEach(task => {
+      if (task.tags) {
+        task.tags.forEach(tag => allTags.add(tag));
+      }
+    });
+    setAvailableTags(Array.from(allTags));
+  }, [tasks]);
+
+  useEffect(() => {
+    if (activeFilters) {
+      applyFilters(activeFilters, tasks);
+    } else {
+      setDisplayedTasks(tasks);
+    }
+  }, [tasks, activeFilters, applyFilters]);
 
   const openCreateModal = (): void => setIsModalVisible(true);
   const closeCreateModal = (): void => setIsModalVisible(false);
@@ -451,7 +482,6 @@ const HomeScreen: React.FC = () => {
       const currentLocalTasks = getAllLocalTasks(userId);
       setTasks(currentLocalTasks);
 
-      // Apply current filters if they exist
       if (activeFilters) {
         applyFilters(activeFilters, currentLocalTasks);
       } else {
@@ -511,14 +541,18 @@ const HomeScreen: React.FC = () => {
     );
   }
 
-  const activeTasks = tasks.filter(task => !task.isDeleted);
+  const activeTasks = displayedTasks.filter(task => !task.isDeleted);
   const hasTasks = activeTasks.length > 0;
-  const hasFilters = !!activeFilters && (activeFilters.tags?.length > 0 || true);
+  const hasFilters =
+    !!activeFilters &&
+    (activeFilters.tags?.length > 0 ||
+      activeFilters.orderBy !== null ||
+      activeFilters.dateFrom !== null ||
+      activeFilters.dateTo !== null);
 
   return (
     <View style={styles.outerContainer}>
       <Header />
-      {/* Botão de filtro no topo */}
       <Pressable
         style={styles.topFilterButton}
         onPress={openFilterModal}
@@ -530,13 +564,26 @@ const HomeScreen: React.FC = () => {
         <ActivityIndicator style={styles.syncIndicator} size="small" color={theme.colors.primary} />
       )}
 
-      {/* Active Filters Bar */}
       {hasFilters && (
         <View style={styles.activeFiltersContainer}>
           <Text style={styles.activeFiltersText}>
-            {activeFilters?.tags.length ? `Tags: ${activeFilters.tags.join(', ')} • ` : ''}
-            Ordenado por prioridade (
-            {activeFilters?.orderBy === 'high-to-low' ? 'alta para baixa' : 'baixa para alta'})
+            {activeFilters?.tags && activeFilters.tags.length > 0
+              ? `Tags: ${activeFilters.tags.join(', ')} • `
+              : ''}
+            {activeFilters?.orderBy &&
+              `Ordenado por prioridade (${
+                activeFilters.orderBy === 'high-to-low' ? 'alta para baixa' : 'baixa para alta'
+              })${activeFilters?.dateFrom || activeFilters?.dateTo ? ' • ' : ''}`}
+            {(activeFilters?.dateFrom || activeFilters?.dateTo) &&
+              `Data: ${
+                activeFilters?.dateFrom
+                  ? new Date(activeFilters.dateFrom).toLocaleDateString('pt-BR')
+                  : ''
+              }${activeFilters?.dateFrom && activeFilters?.dateTo ? ' até ' : ''}${
+                activeFilters?.dateTo
+                  ? new Date(activeFilters.dateTo).toLocaleDateString('pt-BR')
+                  : ''
+              }`}
           </Text>
           <Pressable onPress={clearFilters}>
             <Text style={styles.clearFiltersText}>Limpar</Text>
@@ -611,6 +658,7 @@ const HomeScreen: React.FC = () => {
         onClose={closeFilterModal}
         onApplyFilters={handleApplyFilters}
         availableTags={availableTags}
+        currentFilters={activeFilters}
       />
     </View>
   );

@@ -1,50 +1,32 @@
 import {useMemo} from 'react';
-import {StyleSheet} from 'react-native'; // Ensure this is imported
+import {StyleSheet} from 'react-native';
 import {Priority} from '../../data/models/Task';
-import {useTheme} from '../../theme/ThemeContext'; // Assuming useTheme is a custom hook
+import {useTheme} from '../../theme/ThemeContext';
 
 export const useEditTaskStyles = () => {
   const {theme} = useTheme();
 
   return useMemo(() => {
-    const getPriorityStyles = (priority: Priority) => {
-      switch (priority) {
-        case 'ALTA':
-          return {
-            backgroundColor: theme.colors.secondaryAccent,
-            color: theme.colors.secondaryBg,
-            borderWidth: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          };
-        case 'BAIXA':
-          return {
-            backgroundColor: theme.colors.secondaryAccent,
-            color: theme.colors.secondaryBg,
-            borderWidth: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          };
-        case 'MÉDIA':
-        default:
-          return {
-            backgroundColor: theme.colors.secondaryAccent,
-            color: theme.colors.secondaryBg,
-            borderWidth: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          };
-      }
-    };
+    const getPriorityStyles = (priority: Priority): ViewStyle => ({
+      backgroundColor: theme.colors.secondaryAccent,
+      borderWidth: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+    });
 
     return StyleSheet.create({
       root: {
         flex: 1,
       },
-
+      outerContainer: {
+        flex: 1,
+        backgroundColor: theme.colors.background,
+      },
       container: {
         flex: 1,
-        padding: 30,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 100, // espaço extra pro botão
       },
       containerChildren: {
         backgroundColor: theme.colors.secondaryBg,
@@ -56,12 +38,9 @@ export const useEditTaskStyles = () => {
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
-        width: '100%',
-        color: theme.colors.mainText,
       },
-      outerContainer: {
-        flex: 1,
-        backgroundColor: theme.colors.background,
+      scrollContent: {
+        paddingBottom: 120,
       },
       label: {
         ...theme.typography.mediumTitle,
@@ -71,18 +50,15 @@ export const useEditTaskStyles = () => {
         color: theme.colors.secondaryText,
       },
       input: {
-        backgroundColor: theme.colors.secondaryBg, // Fundo um pouco diferente para destaque
+        backgroundColor: theme.colors.secondaryBg,
         borderRadius: 8,
         paddingHorizontal: 15,
         paddingVertical: 12,
-        marginBottom: 7, // Espaço padrão abaixo do input
+        marginBottom: 7,
         ...theme.typography.regular,
         color: theme.colors.mainText,
         borderWidth: 2,
-        borderColor: theme.colors.primary, // Borda sutil
-      },
-      scrollContent: {
-        paddingBottom: 40,
+        borderColor: theme.colors.primary,
       },
       multilineInput: {
         height: 100,
@@ -90,17 +66,17 @@ export const useEditTaskStyles = () => {
       },
       priorityContainer: {
         flexDirection: 'row',
-        width: '100%',
+        justifyContent: 'space-between',
         marginBottom: 12,
       },
       priorityButton: {
         paddingVertical: 2,
         paddingHorizontal: 12,
         borderRadius: 6,
-        marginRight: 10,
         borderWidth: 2,
         borderColor: theme.colors.primary,
-        width: '30%',
+        flex: 1,
+        marginHorizontal: 4,
       },
       priorityALTA: getPriorityStyles('ALTA'),
       priorityMÉDIA: getPriorityStyles('MÉDIA'),
@@ -108,7 +84,6 @@ export const useEditTaskStyles = () => {
       priorityText: {
         ...theme.typography.caption,
         color: theme.colors.primary,
-        fontWeight: 'regular',
         textTransform: 'uppercase',
         textAlign: 'center',
         fontSize: 16,
@@ -118,8 +93,8 @@ export const useEditTaskStyles = () => {
         color: theme.colors.error,
         alignSelf: 'flex-start',
         marginLeft: 5,
-        marginBottom: 12, // Espaço depois da mensagem de erro
-        height: 15, // Reserva o espaço mesmo sem erro
+        marginBottom: 12,
+        height: 15,
       },
       dateInputButton: {
         justifyContent: 'center',
@@ -132,23 +107,29 @@ export const useEditTaskStyles = () => {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 12,
-        width: '100%',
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        backgroundColor: theme.colors.background,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
       },
       button: {
-        paddingVertical: 10,
+        paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 8,
         alignItems: 'center',
         width: '48%',
-        height: 45,
+        height: 50,
       },
       buttonText: {
         ...theme.typography.mediumTitle,
         textTransform: 'uppercase',
+        fontSize: 14,
       },
       cancelButton: {
-        backgroundColor: 'transparent', // Sem fundo
+        backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: theme.colors.primary,
       },
@@ -159,7 +140,7 @@ export const useEditTaskStyles = () => {
         backgroundColor: theme.colors.primary,
       },
       saveButtonText: {
-        color: theme.colors.secondaryBg, // Texto contrastante
+        color: theme.colors.secondaryBg,
       },
       deleteIcon: {
         color: theme.colors.error,
@@ -184,6 +165,7 @@ export const useEditTaskStyles = () => {
         justifyContent: 'center',
         gap: 4,
         marginBottom: 10,
+        paddingHorizontal: 6,
       },
       textTag: {
         ...theme.typography.regular,
@@ -193,6 +175,7 @@ export const useEditTaskStyles = () => {
       tagOuterContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        marginTop: 4,
       },
       buttonArrow: {
         position: 'absolute',

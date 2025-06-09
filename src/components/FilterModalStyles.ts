@@ -16,7 +16,6 @@ export const useFilterModalStyles = () => {
         },
         modalContainer: {
           width: 329,
-          height: 478,
           maxHeight: '80%',
           borderRadius: 8,
           overflow: 'hidden',
@@ -35,13 +34,11 @@ export const useFilterModalStyles = () => {
           color: theme.colors.mainText,
           fontSize: 20,
           fontWeight: '600',
-          width: 56,
-          height: 28,
         },
         closeButton: {
           fontSize: 26,
           fontWeight: '500',
-          color: '#E74C3C', // Cor vermelha para o X
+          color: '#E74C3C',
           width: 26,
           height: 26,
           textAlign: 'center',
@@ -54,8 +51,11 @@ export const useFilterModalStyles = () => {
         section: {
           marginBottom: 8,
           paddingBottom: 8,
-          borderBottomWidth: 1,
-          borderBottomColor: '#E0E0E0',
+        },
+        sectionLast: {
+          marginBottom: 8,
+          paddingBottom: 8,
+          borderBottomWidth: 0,
         },
         sectionHeader: {
           flexDirection: 'row',
@@ -69,13 +69,13 @@ export const useFilterModalStyles = () => {
         },
         chevron: {
           fontSize: 24,
-          color: '#5B3CC4', // Cor exata do roxo
+          color: '#5B3CC4',
           width: 24,
           height: 24,
           textAlign: 'center',
         },
         chevronActive: {
-          color: '#5B3CC4', // Mesma cor quando ativo
+          color: '#5B3CC4',
         },
         sectionContent: {
           paddingLeft: 8,
@@ -90,7 +90,7 @@ export const useFilterModalStyles = () => {
           paddingHorizontal: 8,
         },
         optionRowSelected: {
-          backgroundColor: '#F3E5F5', // Fundo lilás claro quando selecionado
+          backgroundColor: '#F3E5F5',
         },
         radioButtonContainer: {
           marginRight: 10,
@@ -106,13 +106,13 @@ export const useFilterModalStyles = () => {
           height: 19.5,
           width: 19.5,
           borderRadius: 10,
-          backgroundColor: '#32C25B', // Verde especificado
+          backgroundColor: '#32C25B',
           borderWidth: 0,
           alignItems: 'center',
           justifyContent: 'center',
         },
         checkmark: {
-          color: '#FFFFFF', // Branco para o checkmark
+          color: '#FFFFFF',
           fontSize: 14,
           fontWeight: 'bold',
         },
@@ -133,7 +133,7 @@ export const useFilterModalStyles = () => {
           paddingVertical: 6,
           marginRight: 10,
           marginBottom: 10,
-          backgroundColor: '#F3E5F5', // Lilás claro para tags
+          backgroundColor: '#F3E5F5',
         },
         checkboxContainer: {
           marginRight: 8,
@@ -149,7 +149,7 @@ export const useFilterModalStyles = () => {
           height: 19.5,
           width: 19.5,
           borderRadius: 4,
-          backgroundColor: '#32C25B', // Verde especificado
+          backgroundColor: '#32C25B',
           borderWidth: 0,
           alignItems: 'center',
           justifyContent: 'center',
@@ -167,11 +167,11 @@ export const useFilterModalStyles = () => {
           padding: 16,
         },
         applyButton: {
-          borderRadius: 4, // Ajustado para bordas menos arredondadas
+          borderRadius: 4,
           paddingVertical: 12,
           alignItems: 'center',
           marginBottom: 8,
-          backgroundColor: '#5B3CC4', // Cor exata do roxo
+          backgroundColor: '#5B3CC4',
         },
         applyButtonText: {
           ...theme.typography.mediumTitle,
@@ -181,17 +181,62 @@ export const useFilterModalStyles = () => {
           fontWeight: '600',
         },
         clearButton: {
-          borderRadius: 4, // Ajustado para bordas menos arredondadas
+          borderRadius: 4,
           paddingVertical: 12,
           alignItems: 'center',
-          backgroundColor: '#F3E5F5', // Lilás claro para o botão secundário
+          backgroundColor: '#F3E5F5',
         },
         clearButtonText: {
           ...theme.typography.mediumTitle,
-          color: '#5B3CC4', // Cor exata do roxo para o texto
+          color: '#5B3CC4',
           textTransform: 'uppercase',
           fontSize: 16,
           fontWeight: '600',
+        },
+        // Novos estilos para data
+        dateInputContainer: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+        },
+        dateLabel: {
+          ...theme.typography.regular,
+          color: theme.colors.mainText,
+          marginRight: 8,
+          minWidth: 60,
+          fontSize: 14,
+        },
+        dateButton: {
+          backgroundColor: '#F3E5F5',
+          borderRadius: 6,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          marginRight: 8,
+          borderWidth: 1,
+          borderColor: '#E0E0E0',
+          flex: 1,
+          minWidth: 140,
+        },
+        dateButtonText: {
+          ...theme.typography.regular,
+          color: theme.colors.mainText,
+          fontSize: 14,
+          textAlign: 'center',
+        },
+        clearDateButton: {
+          backgroundColor: '#E74C3C',
+          borderRadius: 12,
+          width: 24,
+          height: 24,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        clearDateText: {
+          color: '#FFFFFF',
+          fontSize: 14,
+          fontWeight: 'bold',
+          lineHeight: 16,
         },
       }),
     [theme],

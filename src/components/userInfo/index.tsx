@@ -6,14 +6,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useAuth} from '../../context/AuthContext';
 import {formatBrazilianPhoneNumber} from '../../utils/formatters';
 
-const avatarImages: Record<string, any> = {
-  avatar_1: require('../../assets/avatarr1.jpg'),
-  avatar_2: require('../../assets/avatarr2.jpg'),
-  avatar_3: require('../../assets/avatarr3.jpg'),
-  avatar_4: require('../../assets/avatarr4.jpg'),
-  avatar_5: require('../../assets/avatarr5.jpg'),
-};
-
 interface UserInfoCardProps {}
 
 export const UserInfoCard: React.FC<UserInfoCardProps> = () => {
@@ -39,10 +31,11 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = () => {
     );
   }
 
-  const avatarSource =
-    currentUserData.picture && avatarImages[currentUserData.picture]
-      ? avatarImages[currentUserData.picture]
-      : require('../../assets/menu/profileImage.png');
+  const avatarSource = {
+    uri: userProfile?.picture
+      ? `https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/${userProfile.picture}.jpg`
+      : 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/default.jpg',
+  };
 
   const formattedPhoneNumber = formatBrazilianPhoneNumber(currentUserData.phone_number);
 

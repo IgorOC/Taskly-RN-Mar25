@@ -27,13 +27,12 @@ import {useTheme} from '../theme/ThemeContext';
 import {Theme} from '../theme/Theme';
 
 const avatars = [
-  {id: 1, source: require('../assets/avatarr1.jpg')},
-  {id: 2, source: require('../assets/avatarr2.jpg')},
-  {id: 3, source: require('../assets/avatarr3.jpg')},
-  {id: 4, source: require('../assets/avatarr4.jpg')},
-  {id: 5, source: require('../assets/avatarr5.jpg')},
+  {id: 1, uri: 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/avatarr1.jpg'},
+  {id: 2, uri: 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/avatarr2.jpg'},
+  {id: 3, uri: 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/avatarr3.jpg'},
+  {id: 4, uri: 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/avatarr4.jpg'},
+  {id: 5, uri: 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/avatarr5.jpg'},
 ];
-
 interface AvatarSelectionScreenParams {
   userData: UserSignupData;
   password: string;
@@ -129,7 +128,7 @@ const AvatarSelectionScreen: React.FC = () => {
               onPress={() => handleSelectAvatar(avatar.id)}
               activeOpacity={0.7}>
               <Image
-                source={avatar.source}
+                source={{uri: avatar.uri}}
                 style={[
                   styles.avatarImage,
                   selectedAvatarId !== null &&

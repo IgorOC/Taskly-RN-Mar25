@@ -6,13 +6,7 @@ import Icon from '@react-native-vector-icons/feather';
 import {useTheme} from '../../theme/ThemeContext';
 import {useAuth} from '../../context/AuthContext';
 
-const avatarImages: Record<string, any> = {
-  avatar_1: require('../../assets/avatarr1.jpg'),
-  avatar_2: require('../../assets/avatarr2.jpg'),
-  avatar_3: require('../../assets/avatarr3.jpg'),
-  avatar_4: require('../../assets/avatarr4.jpg'),
-  avatar_5: require('../../assets/avatarr5.jpg'),
-};
+
 
 const HeaderIntern: React.FC = () => {
   const styles = useHeaderInternStyles();
@@ -20,10 +14,11 @@ const HeaderIntern: React.FC = () => {
   const {theme} = useTheme();
   const {userProfile} = useAuth();
 
-  const avatarSource =
-    userProfile?.picture && avatarImages[userProfile.picture]
-      ? avatarImages[userProfile.picture]
-      : require('../../assets/imgs/profileImage.png');
+  const avatarSource = {
+    uri: userProfile?.picture
+      ? `https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/${userProfile.picture}.jpg`
+      : 'https://avatars-taskly-igu.s3.us-east-2.amazonaws.com/default.jpg',
+  };
 
   return (
     <View style={styles.container}>
